@@ -85,4 +85,5 @@ cp .bashrc .rtorrent.rc .vimrc .Xdefaults .zshrc /home/ak
 exit
 
 
-kj
+
+
