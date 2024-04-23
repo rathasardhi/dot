@@ -43,13 +43,7 @@ read bootpartition
 grub-install $bootpartition
 grub-mkconfig -o /boot/grub/grub.cfg
 
-pacman -S --noconfirm a52dec
-aalib
-abseil-cpp
-accountsservice
-acl
-adobe-source-code-pro-fonts
-adwaita-cursors
+
 adwaita-icon-theme
 alacritty
 alsa-card-profiles
