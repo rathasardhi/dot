@@ -53,7 +53,7 @@ pacman -S --noconfirm xorg-server xorg-xinit xorg-xkill xorg-xsetroot xorg-xback
      xcompmgr libnotify dunst slock jq aria2 cowsay \
      dhcpcd connman wpa_supplicant rsync pamixer mpd ncmpcpp \
      zsh-syntax-highlighting xdg-user-dirs libconfig \
-     bluez bluez-utils
+     bluez bluez-utils fish 
 
 
 
@@ -68,7 +68,6 @@ sed '1,/^#part3$/d' arch_install2.sh > $ai3_path
 chown $username:$username $ai3_path
 chmod +x $ai3_path
 su -c $ai3_path -s /bin/sh $username
-exit
 
 pacman -S  networkmanager 
 systemctl enable NetworkManager.service
