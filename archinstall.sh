@@ -53,7 +53,7 @@ pacman -S --noconfirm xorg-server xorg-xinit xorg-xkill xorg-xsetroot xorg-xback
      xcompmgr libnotify dunst slock jq aria2 cowsay \
      dhcpcd connman wpa_supplicant rsync pamixer mpd ncmpcpp \
      zsh-syntax-highlighting xdg-user-dirs libconfig \
-     bluez bluez-utils fish 
+     bluez bluez-utils fish  vim
 
 
 
