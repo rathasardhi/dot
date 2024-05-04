@@ -46,14 +46,14 @@ grub-mkconfig -o /boot/grub/grub.cfg
 pacman -S --noconfirm xorg-server xorg-xinit xorg-xkill xorg-xsetroot xorg-xbacklight xorg-xprop \
      noto-fonts noto-fonts-emoji noto-fonts-cjk ttf-jetbrains-mono ttf-joypixels ttf-font-awesome \
      sxiv mpv zathura zathura-pdf-mupdf ffmpeg imagemagick  \
-     fzf man-db xwallpaper python-pywal unclutter xclip maim \
+     fzf man-db feh python-pywal unclutter xclip maim \
      zip unzip unrar p7zip xdotool papirus-icon-theme brightnessctl  \
-     dosfstools ntfs-3g git sxhkd zsh pipewire pipewire-pulse \
+     dosfstools ntfs-3g git sxhkd  pipewire pipewire-pulse \
      emacs-nox arc-gtk-theme rsync qutebrowser dash \
      xcompmgr libnotify dunst slock jq aria2 cowsay \
-     dhcpcd connman wpa_supplicant rsync pamixer mpd ncmpcpp \
-     zsh-syntax-highlighting xdg-user-dirs libconfig \
-     bluez bluez-utils fish  vim
+     connman  rsync pamixer  \
+      xdg-user-dirs libconfig \
+     bluez bluez-utils fish  vim 
 
 
 
