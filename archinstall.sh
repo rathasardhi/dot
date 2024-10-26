@@ -38,7 +38,7 @@ echo "127.0.1.1       $hostname.localdomain $hostname" >> /etc/hosts
 mkinitcpio -P
 passwd
 pacman -S grub --noconfirm
-echo "Enter boot partition: " 
+echo "Enter boot partition grub: " 
 read bootpartition
 grub-install $bootpartition
 grub-mkconfig -o /boot/grub/grub.cfg
@@ -53,7 +53,7 @@ pacman -S --noconfirm xorg-server xorg-xinit xorg-xkill xorg-xsetroot xorg-xback
      xcompmgr libnotify dunst slock jq aria2 cowsay \
      connman  rsync pamixer  \
       xdg-user-dirs libconfig \
-     bluez bluez-utils fish  vim 
+     bluez bluez-utils fish  vim ttf-hack lxappearance bash-completion firefox urxvt-perls rxvt-unicode rx_tools  polybar redshift deja-dup kitty dmenu sxhkd bspwm  
 
 
 
