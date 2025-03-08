@@ -207,6 +207,16 @@ PROMPT_COMMAND='__setprompt'
 
 
 
+ar ()
+{
+
+aria2c $1
+}
+
+
+
+
+
 phone ()
 {
 ssh -p 8022 localhost@192.168.29.202
@@ -214,11 +224,18 @@ ssh -p 8022 localhost@192.168.29.202
 
 lapt ()
 {
+ssh ak@192.168.29.241
+}
+
+
+sr ()
+{
 ssh ak@192.168.29.242
 }
 
+
 vpn (){
-sudo openvpn /home/ak/Downloads/vpn/jp-free-122024.protonvpn.udp.ovpn
+sudo openvpn /home/ak/Downloads/vpn/nl-free-101072.protonvpn.udp.ovpn
 }
 
 
@@ -253,12 +270,26 @@ timedatectl show-timesync
 
 
 
+mm()
+
+{
+cd /mount/1tb/Media/movies/
+
+
+}
 
 
 
 
 
 
+Mm()
+
+{
+cd /mount/500g/Media/MOVIES/
+
+
+}
 
 
 uu()
@@ -289,64 +320,6 @@ today()
 {
     echo This is a `date +"%A %d in %B of %Y (%r)"` return
 }
-
-
-
-
-
-
-
-mm()
-
-{
-
-cd /mount/500g/Media/music ;
-ls * &&  mpv --no-video  "$(fzf )"
-
-
-}
-
-
-
-
-
-ms()
-
-{
-
-cd /mount/500g/Media/shows ;
-ls *.mkv &&  mpv "$(fzf -e --keep-right --layout=reverse)"
-
-
-}
-
-
-
-
-
-mu()
-
-{
-
-cd /mount/500g/.ul ;
-ls *.mkv &&  mpv "$(fzf -e --keep-right --layout=reverse)"
-
-}
-
-
-
-mx()
-
-{
-
-cd /mount/500g/.x2 ;
-ls *.mkv &&  mpv "$(fzf -e --keep-right --layout=reverse )"
-
-}
-
-
-
-
 
 
 
