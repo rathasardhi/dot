@@ -1,0 +1,136 @@
+#!/bin/bash
+set -e
+
+### ---- CONFIG ----
+USERNAME=ak
+
+### ---- PREPARE LIVE ENV ----
+sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 15/' /etc/pacman.conf
+pacman --noconfirm -Sy archlinux-keyring
+loadkeys us
+timedatectl set-ntp true
+
+### ---- PARTITION SELECTION ----
+lsblk -f
+echo "Enter the disk to install on (e.g. /dev/sda): "
+read DISK
+
+cfdisk $DISK
+
+echo "Enter the Linux ROOT partition (e.g. /dev/sda2):"
+read PART_ROOT
+
+### ---- FORMAT + MOUNT ----
+mkfs.ext4 "$PART_ROOT"
+mount "$PART_ROOT" /mnt
+
+### ---- INSTALL BASE ----
+pacman -S --noconfirm reflector
+pacstrap /mnt base base-devel linux linux-firmware vim sudo networkmanager
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+### ---- COPY STAGE2 ----
+cat << 'EOF' > /mnt/install_stage2.sh
+#!/bin/bash
+set -e
+
+### ---- CONFIG ----
+USERNAME=ak
+
+printf '\033c'
+sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 15/' /etc/pacman.conf
+
+### ---- LOCALE + TIME ----
+ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+hwclock --systohc
+
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
+
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "KEYMAP=us" > /etc/vconsole.conf
+
+### ---- HOSTNAME ----
+read -p "Enter hostname: " HOST
+echo "$HOST" > /etc/hostname
+
+cat << EOH > /etc/hosts
+127.0.0.1       localhost
+::1             localhost
+127.0.1.1       $HOST.localdomain $HOST
+EOH
+
+### ---- INITRAMFS ----
+mkinitcpio -P
+
+### ---- ROOT PASSWORD ----
+echo "Set ROOT password:"
+passwd
+
+### ---- BOOTLOADER ----
+pacman -S --noconfirm grub efibootmgr dosfstools
+
+read -p "Enter DISK for grub-install (example: /dev/sda): " GRUB_DISK
+grub-install $GRUB_DISK
+grub-mkconfig -o /boot/grub/grub.cfg
+
+### ---- SYSTEM PACKAGES ----
+pacman -S --noconfirm \
+    xorg-server xorg-xinit xorg-xkill xorg-xsetroot xorg-xbacklight xorg-xprop \
+    noto-fonts noto-fonts-emoji noto-fonts-cjk ttf-jetbrains-mono ttf-joypixels ttf-font-awesome \
+    sxiv mpv zathura zathura-pdf-mupdf ffmpeg imagemagick \
+    fzf man-db feh python-pywal unclutter xclip maim \
+    zip unzip unrar p7zip xdotool papirus-icon-theme brightnessctl \
+    ntfs-3g git sxhkd pipewire pipewire-pulse \
+    emacs-nox arc-gtk-theme rsync qutebrowser dash \
+    xcompmgr libnotify dunst slock jq aria2 cowsay \
+    bluez bluez-utils fish vim ttf-hack lxappearance bash-completion \
+    firefox rxvt-unicode kitty dmenu bspwm polybar redshift deja-dup
+
+### ---- SERVICES ----
+systemctl enable NetworkManager
+systemctl enable bluetooth
+systemctl enable pipewire pipewire-pulse
+
+### ---- USER CREATION ----
+useradd -m -G wheel,audio,video,storage $USERNAME
+echo "Set password for $USERNAME:"
+passwd $USERNAME
+
+echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/10-wheel
+
+### ---- COPY STAGE 3 ----
+cat << 'EO3' > /home/$USERNAME/install_stage3.sh
+#!/bin/bash
+set -e
+
+### ---- INSTALL PARU ----
+mkdir -p ~/.scripts
+cd ~/.scripts
+git clone https://aur.archlinux.org/paru.git
+cd paru
+makepkg -si --noconfirm
+
+### ---- DOTFILES ----
+cd ~/.scripts
+git clone https://github.com/rathasardhi/dot.git
+cd dot
+cp -r .bashrc .rtorrent.rc .vimrc .Xdefaults .zshrc ~/
+
+echo "Stage 3 complete."
+EO3
+
+chmod +x /home/$USERNAME/install_stage3.sh
+chown $USERNAME:$USERNAME /home/$USERNAME/install_stage3.sh
+
+echo "Run Stage 3 as user after reboot: ./install_stage3.sh"
+EOF
+
+chmod +x /mnt/install_stage2.sh
+
+### ---- CHROOT ----
+arch-chroot /mnt /install_stage2.sh
+
+echo "Installation Finished. Reboot."
+
