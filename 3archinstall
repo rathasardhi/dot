@@ -1,0 +1,118 @@
+#!/bin/bash
+set -e
+
+### ---------------------------------------------------------
+### CONFIGURATION
+### ---------------------------------------------------------
+ROOT_PART="/dev/nvme0n1p1"
+HOME_PART="/dev/nvme0n1p6"
+SWAP_PART="/dev/nvme0n1p5"
+USERNAME="ak"
+USER_UID=1000  # IMPORTANT: match your old Debian UID
+HOSTNAME="archlinux"
+TIMEZONE="Asia/Kolkata"
+LOCALE="en_US.UTF-8"
+### ---------------------------------------------------------
+
+echo "===== Arch Linux Minimal Installation ====="
+echo "Root partition  : $ROOT_PART"
+echo "Home partition  : $HOME_PART (NOT TOUCHED)"
+echo "Swap partition  : $SWAP_PART"
+echo "Username        : $USERNAME"
+echo
+read -p "Continue? (y/N): " yn
+[ "$yn" != "y" ] && exit 1
+
+### ---------------------------------------------------------
+### STEP 1 — FORMAT ROOT ONLY (DO NOT TOUCH HOME!)
+### ---------------------------------------------------------
+echo "[+] Formatting root partition..."
+mkfs.ext4 $ROOT_PART
+
+### ---------------------------------------------------------
+### STEP 2 — Mount partitions
+### ---------------------------------------------------------
+echo "[+] Mounting partitions..."
+mount $ROOT_PART /mnt
+
+mkdir -p /mnt/home
+mount $HOME_PART /mnt/home
+
+swapon $SWAP_PART
+
+### ---------------------------------------------------------
+### STEP 3 — Install base system
+### ---------------------------------------------------------
+echo "[+] Installing base system..."
+pacstrap /mnt base linux linux-firmware sudo vim networkmanager grub efibootmgr
+
+### ---------------------------------------------------------
+### STEP 4 — Generate fstab
+### ---------------------------------------------------------
+echo "[+] Generating fstab..."
+genfstab -U /mnt >> /mnt/etc/fstab
+
+### ---------------------------------------------------------
+### STEP 5 — Chroot and configure system
+### ---------------------------------------------------------
+arch-chroot /mnt /bin/bash <<EOF
+set -e
+
+echo "[+] Setting timezone..."
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+hwclock --systohc
+
+echo "[+] Setting locale..."
+echo "$LOCALE UTF-8" >> /etc/locale.gen
+locale-gen
+echo "LANG=$LOCALE" > /etc/locale.conf
+
+echo "[+] Setting hostname..."
+echo "$HOSTNAME" > /etc/hostname
+
+cat << EOH > /etc/hosts
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   $HOSTNAME.localdomain $HOSTNAME
+EOH
+
+echo "[+] Setting root password..."
+passwd
+
+### ---------------------------------------------------------
+### Install and configure GRUB
+### ---------------------------------------------------------
+echo "[+] Installing GRUB bootloader..."
+grub-install /dev/nvme0n1   # INSTALL TO DISK, NOT A PARTITION
+sed -i 's/^GRUB_DISABLE_OS_PROBER=true/#GRUB_DISABLE_OS_PROBER=true/' /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg
+
+### ---------------------------------------------------------
+### Create user (same UID as old Debian user)
+### ---------------------------------------------------------
+echo "[+] Creating user: $USERNAME (UID=$USER_UID)"
+useradd -m -u $USER_UID -G wheel,audio,video,storage $USERNAME
+
+echo "[+] Set password for $USERNAME"
+passwd $USERNAME
+
+echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
+
+### ---------------------------------------------------------
+### Enable essential services
+### ---------------------------------------------------------
+systemctl enable NetworkManager
+systemctl enable systemd-timesyncd
+
+EOF
+
+### ---------------------------------------------------------
+### STEP 6 — Unmount and finish
+### ---------------------------------------------------------
+echo "[+] Installation complete."
+umount -R /mnt
+swapoff -a
+
+echo "Reboot into your new Arch Linux system!"
+echo "========================================="
+
