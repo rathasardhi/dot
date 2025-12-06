@@ -6,13 +6,16 @@ xset fp rehash
 xsetroot -cursor_name left_ptr
 #feh --bg-fill --randomize pics/gruvbox/ &
 #$HOME/.config/polybar/launch.sh &
-redshift -l 17.42:78.51 -t 6500K:4000K &
+redshift -l 17.42:78.51 -t 6500K:5500K &
+export XCURSOR_THEME=Breeze Light
+export XCURSOR_SIZE=48
+
+
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 dunst &
 sxhkd &
 #time.sh &
-polybar &
-
+#polybar &
 #screen -DR &
 #screen -t rtorrent bash -c 'rtorrent' 
 
